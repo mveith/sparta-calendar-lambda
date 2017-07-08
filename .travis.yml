@@ -1,0 +1,16 @@
+language: clojure
+
+lein: 2.7.1
+
+jdk:
+- oraclejdk8
+
+before_install:
+- sudo apt-get update
+- sudo pip install awscli
+- which parallel || sudo apt-get install parallel
+- nvm install 5
+
+script:
+ - lein cljs-lambda $AWS_IAM_ROLE
+ - lein cljs-lambda deploy
