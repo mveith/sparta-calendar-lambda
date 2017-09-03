@@ -93,12 +93,17 @@
 (defn send [data] 
   (.putObject s3 (get-bucket data) done))
         
+(defn prepare-data [data]
+  (let [escaped (str/replace data "\"" "\\\"")
+        trimmed (subs escaped 1 (- (count escaped) 1))]
+     (str "matchesData = \"[" trimmed "]\"")))
+
 (def ^:export matches
   (async-lambda-fn
    (fn [event ctx]
      (go 
        (let [html (<! (get matches-url))]
-        (send (str (get-matches html)))
+        (send (prepare-data (str (get-matches html))))
         {
           :body (str (get-matches html))
           :status 200 })))))
