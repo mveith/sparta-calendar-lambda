@@ -70,15 +70,35 @@
      :is-home-match (home-match? (get-td-content (nth cells 5)))
      }))
 
+(defn get-matches [html]
+  (map create-match
+    (->
+      (get-matches-table html)
+      (get-matches-rows)
+      )))
+
+(def aws-sdk
+  (nodejs/require "aws-sdk"))
+(def s3 (new aws-sdk.S3))
+(def bucketName "sparta-calendar.mveith.com")
+(def fileName "data.js")
+
+(defn get-bucket [data] (js-obj "Bucket" bucketName "Key" fileName "Body" data))
+
+(defn done [err data]   
+  (js/console.log "odesláno:")
+  (js/console.log err)
+  (js/console.log data))
+
+(defn send [data] 
+  (.putObject s3 (get-bucket data) done))
+        
 (def ^:export matches
   (async-lambda-fn
    (fn [event ctx]
      (go 
        (let [html (<! (get matches-url))]
-      {:body (str 
-              (map create-match
-                (->
-                  (get-matches-table html)
-                  (get-matches-rows)
-                  )))
-      :status 200})))))
+        (send (str (get-matches html)))
+        {
+          :body (str (get-matches html))
+          :status 200 })))))
