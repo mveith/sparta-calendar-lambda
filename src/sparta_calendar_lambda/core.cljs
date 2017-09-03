@@ -86,7 +86,7 @@
 (defn get-bucket [data] (js-obj "Bucket" bucketName "Key" fileName "Body" data))
 
 (defn done [err data]   
-  (js/console.log "odesláno:")
+  (js/console.log "putObject callback:")
   (js/console.log err)
   (js/console.log data))
 
@@ -102,8 +102,9 @@
   (async-lambda-fn
    (fn [event ctx]
      (go 
-       (let [html (<! (get matches-url))]
-        (send (prepare-data (str (get-matches html))))
+       (let [html (<! (get matches-url))
+             matches-data-string (-> (get-matches html) (str))]
+        (send (prepare-data matches-data-string))
         {
-          :body (str (get-matches html))
+          :body matches-data-string
           :status 200 })))))
